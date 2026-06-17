@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Package app
+        run: bash scripts/install-app.sh
+
+      - name: Zip
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          zip -r "TokenIsland-${VERSION}-macOS.zip" TokenIsland.app
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: TokenIsland-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
